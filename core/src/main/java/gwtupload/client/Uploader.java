@@ -19,7 +19,6 @@ package gwtupload.client;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
-import com.google.gwt.dom.client.AnchorElement;
 import com.google.gwt.dom.client.FormElement;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -48,8 +47,8 @@ import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Node;
 import com.google.gwt.xml.client.NodeList;
 import com.google.gwt.xml.client.XMLParser;
-import com.google.gwt.xml.client.impl.DOMParseException;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -348,7 +347,7 @@ public class Uploader extends Composite implements IsUpdateable, IUploader, HasJ
     public void onChange(ChangeEvent event) {
       basenames.clear();
       for (String s: getFileNames()) {
-        basenames.add(Utils.basename(s));
+    	  basenames.add(Utils.basename(s));
       }
       statusWidget.setFileNames(basenames);
       if (anyFileIsRepeated(false)) {
@@ -826,7 +825,7 @@ public class Uploader extends Composite implements IsUpdateable, IUploader, HasJ
    * @see gwtupload.client.IUploader#getFileName()
    */
   public String getFileName() {
-    return fileInput.getFilename();
+	  return fileInput.getFilename();  
   }
 
   /* (non-Javadoc)
@@ -1362,7 +1361,7 @@ public class Uploader extends Composite implements IsUpdateable, IUploader, HasJ
     boolean valid = Utils.validateExtension(validExtensions, filename);
     if (!valid) {
       finished = true;
-      statusWidget.setError(i18nStrs.uploaderInvalidExtension() + validExtensionsMsg);
+      statusWidget.setError("只允许上传：" + validExtensionsMsg + "类型的文件！");
       statusWidget.setStatus(Status.INVALID);
     }
     return valid;

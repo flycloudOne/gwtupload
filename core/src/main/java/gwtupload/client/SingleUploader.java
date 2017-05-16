@@ -224,6 +224,12 @@ public class SingleUploader extends Uploader {
     formWidgets.clear();
   }
 
+	public Hidden getFormWidget(int i) {
+		if(formWidgets != null) {
+			return (Hidden)formWidgets.get(i);
+		}
+		return null;
+	}
   /* (non-Javadoc)
    * @see gwtupload.client.Uploader#onFinishUpload()
    */
