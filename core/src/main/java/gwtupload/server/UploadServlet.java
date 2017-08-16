@@ -409,18 +409,18 @@ public class UploadServlet extends HttpServlet implements Servlet {
 
   @Override
   protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    if (checkCORS(request, response) && request.getMethod().equals("OPTIONS")) {
-      String method = request.getHeader("Access-Control-Request-Method");
-      if (method != null) {
-        response.addHeader("Access-Control-Allow-Methods", method);
-        response.setHeader("Allow", "GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS");
-      }
-      String headers = request.getHeader("Access-Control-Request-Headers");
-      if (headers != null) {
-        response.addHeader("Access-Control-Allow-Headers", headers);
-      }
-      response.setContentType("text/plain");
-    }
+//    if (checkCORS(request, response) && request.getMethod().equals("OPTIONS")) {
+//      String method = request.getHeader("Access-Control-Request-Method");
+//      if (method != null) {
+//        response.addHeader("Access-Control-Allow-Methods", method);
+//        response.setHeader("Allow", "GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS");
+//      }
+//      String headers = request.getHeader("Access-Control-Request-Headers");
+//      if (headers != null) {
+//        response.addHeader("Access-Control-Allow-Headers", headers);
+//      }
+//      response.setContentType("text/plain");
+//    }
     super.service(request, response);
   }
 

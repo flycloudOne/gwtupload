@@ -108,18 +108,6 @@
       <version>${commonsIoVersion}</version>
     </dependency>
     <dependency>
-      <groupId>gwtchismes</groupId>
-      <artifactId>gwtchismes</artifactId>
-      <version>${gwtChismesVersion}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.gwt</groupId>
-      <artifactId>gwt-incubator</artifactId>
-      <version>${gwtIncubatorVersion}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.timepedia.exporter</groupId>
       <artifactId>gwtexporter</artifactId>
       <version>${gwtExporterVersion}</version>
@@ -180,46 +168,6 @@
     </mailingList>
   </mailingLists>
 
-  <repositories>
-    <repository>
-      <id>repo1</id>
-      <url>http://repo1.maven.org/maven2/</url>
-    </repository>
-    <repository>
-      <id>gwtupload</id>
-      <url>http://gwtupload.googlecode.com/svn/mavenrepo/</url>
-    </repository>
-    <repository>
-      <id>gwtchismes</id>
-      <url>http://gwtchismes.googlecode.com/svn/mavenrepo/</url>
-    </repository>
-    <repository>
-      <id>timepedia</id>
-      <url>http://timefire-repository.googlecode.com/svn/mavenrepo/</url>
-    </repository>
-    <repository>
-      <id>seasar</id>
-      <url>http://maven.seasar.org/maven2</url>
-    </repository>
-    <repository>
-      <id>gquery-plugins</id>
-      <url>http://gwtquery-plugins.googlecode.com/svn/mavenrepo</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>gwtupload</id>
-      <url>http://gwtupload.googlecode.com/svn/mavenrepo/</url>
-    </pluginRepository>
-    <pluginRepository>
-      <id>codehaus.snapshots</id>
-      <url>http://snapshots.repository.codehaus.org/</url>
-    </pluginRepository>
-  </pluginRepositories>
 
   <issueManagement>
     <system>Google Code</system>
