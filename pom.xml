@@ -11,7 +11,6 @@
     <module>core</module>
     <module>gae</module>
     <module>jsupload</module>
-    <module>samples</module>
   </modules>
 
   <parent>
