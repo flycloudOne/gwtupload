@@ -2,6 +2,7 @@
 
   <modelVersion>4.0.0</modelVersion>
   <artifactId>gwtupload</artifactId>
+  <version>1.0.4</version>
   <packaging>jar</packaging>
   <name>GwtUpload library</name>
   <description>GwtUpload library: client and server classes (compatible with: Gwt 1.6.x,1.7.x,2.0.x)</description>
@@ -9,7 +10,7 @@
   <parent>
     <groupId>com.googlecode.gwtupload</groupId>
     <artifactId>gwtupload-project</artifactId>
-    <version>1.0.4-SNAPSHOT</version>
+    <version>1.0.3</version>
   </parent>
 
   <dependencies>
