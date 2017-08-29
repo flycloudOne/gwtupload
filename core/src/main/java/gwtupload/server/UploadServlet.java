@@ -379,7 +379,7 @@ public class UploadServlet extends HttpServlet implements Servlet {
    * @return FileItem
    * @throws IOException
    */
-  protected FileItem removeUploadedFile(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  protected static FileItem removeUploadedFile(HttpServletRequest request, HttpServletResponse response) throws IOException {
     String parameter = request.getParameter(UConsts.PARAM_REMOVE);
 
     FileItem item = findFileItem(getSessionFileItems(request), parameter);
@@ -464,7 +464,7 @@ public class UploadServlet extends HttpServlet implements Servlet {
    *        specify whether the request is post or not.
    * @throws IOException
    */
-  protected void renderXmlResponse(HttpServletRequest request, HttpServletResponse response, String message, boolean post) throws IOException {
+  protected static void renderXmlResponse(HttpServletRequest request, HttpServletResponse response, String message, boolean post) throws IOException {
     String contentType = post ? "text/plain" : "text/html";
 
     String xml = XML_TPL.replace("%%MESSAGE%%", message != null ? message : "");
@@ -475,7 +475,7 @@ public class UploadServlet extends HttpServlet implements Servlet {
     renderMessage(response, xml, contentType);
   }
 
-  protected void renderXmlResponse(HttpServletRequest request, HttpServletResponse response, String message) throws IOException {
+  protected static void renderXmlResponse(HttpServletRequest request, HttpServletResponse response, String message) throws IOException {
     renderXmlResponse(request, response, message, false);
   }
 

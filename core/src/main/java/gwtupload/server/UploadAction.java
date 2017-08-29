@@ -207,12 +207,18 @@ public class UploadAction extends UploadServlet {
       }
       UploadServlet.removeSessionFileItems(request);
     } else {
-      if (message != null) {
-        // see issue #139
-        tags.put("message", "<![CDATA[" + message + "]]>");
-      }
-      postResponse = statusToString(tags);
-      renderXmlResponse(request, response, postResponse, true);
+    	  // 自定义GWT上传操作，返回信息为RO的序列化字符串 by xiewz 2017.8.29
+    	  String uploadType = request.getHeader("UploadType");
+    	  if ( uploadType != null && !uploadType.trim().isEmpty() && message != null ) {
+    		renderMessage(response, message, "text/plain");
+    	  } else { // 兼容默认处理
+		if (message != null) {
+			// see issue #139
+			tags.put("message", "<![CDATA[" + message + "]]>");
+		}
+		postResponse = statusToString(tags);
+		renderXmlResponse(request, response, postResponse, true);
+    	  }
     }
     finish(request, postResponse);
 
