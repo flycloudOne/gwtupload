@@ -430,9 +430,13 @@ public class Uploader extends Composite implements IsUpdateable, IUploader, HasJ
 
   private SubmitCompleteHandler onSubmitCompleteHandler = new SubmitCompleteHandler() {
     public void onSubmitComplete(SubmitCompleteEvent event) {
-      if (event.getResults() == null || event.getResults().isEmpty()) {
-          // https://github.com/manolo/gwtupload/issues/11
-          log("Ignoring empty message in onSubmitComplete", null);
+//      if (event.getResults() == null || event.getResults().isEmpty()) {
+//          // https://github.com/manolo/gwtupload/issues/11
+//          log("Ignoring empty message in onSubmitComplete", null);
+//          return;
+//      }
+      // 如果已经提交完成，则不需要重复处理提交完成
+      if ( onSubmitComplete ) {
           return;
       }
       updateStatusTimer.cancel();

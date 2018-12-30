@@ -22,6 +22,8 @@ import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.fileupload.ProgressListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -40,7 +42,7 @@ public abstract class AbstractUploadListener implements ProgressListener, Serial
 
   protected static int DEFAULT_SAVE_INTERVAL = 3000;
 
-  protected static UploadLogger logger = UploadLogger.getLogger(AbstractUploadListener.class);
+  protected static final Logger logger = LoggerFactory.getLogger(AbstractUploadListener.class);
 
   protected static final long serialVersionUID = -6431275569719042836L;
 
@@ -79,7 +81,6 @@ public abstract class AbstractUploadListener implements ProgressListener, Serial
 
   private AbstractUploadListener() {
     className = this.getClass().getName().replaceAll("^.+\\.", "");
-    logger = UploadLogger.getLogger(this.getClass());
   }
 
   /**

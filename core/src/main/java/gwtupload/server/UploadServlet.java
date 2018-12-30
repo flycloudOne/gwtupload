@@ -23,6 +23,10 @@ import org.apache.commons.fileupload.FileUploadBase.SizeLimitExceededException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.efounder.eai.service.ParameterManager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,7 +77,6 @@ import static gwtupload.shared.UConsts.TAG_SESSION_ID;
 import static gwtupload.shared.UConsts.TAG_SIZE;
 import static gwtupload.shared.UConsts.TAG_TOTAL_BYTES;
 import static gwtupload.shared.UConsts.TAG_VALUE;
-
 import gwtupload.server.exceptions.UploadActionException;
 import gwtupload.server.exceptions.UploadCanceledException;
 import gwtupload.server.exceptions.UploadException;
@@ -143,6 +146,8 @@ import gwtupload.shared.UConsts;
  *
  */
 public class UploadServlet extends HttpServlet implements Servlet {
+    
+  protected static final Logger logger = LoggerFactory.getLogger(UploadServlet.class);
 
   private static final String SESSION_FILES = "FILES";
   private static final String SESSION_LAST_FILES = "LAST_FILES";
@@ -156,8 +161,6 @@ public class UploadServlet extends HttpServlet implements Servlet {
   protected static final String XML_ERROR_TIMEOUT = "<" + TAG_ERROR + ">timeout receiving file</" + TAG_ERROR + ">";
   protected static final String XML_FINISHED_OK = "<" + TAG_FINISHED + ">OK</" + TAG_FINISHED + ">";
 
-  protected static UploadLogger logger = UploadLogger.getLogger(UploadServlet.class);
-
   protected static final ThreadLocal<HttpServletRequest> perThreadRequest = new ThreadLocal<HttpServletRequest>();
 
   private static boolean appEngine = false;
@@ -167,6 +170,10 @@ public class UploadServlet extends HttpServlet implements Servlet {
   private static String XML_TPL = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<response>%%MESSAGE%%</response>\n";
 
   private String corsDomainsRegex = "^$";
+
+  private static final String GWT_UPLOAD_LISTENER_TYPE = "GWT_UPLOAD_LISTENER_TYPE";
+  
+  private static final String GWT_UPLOAD_LISTENER_TYPE_REDIS = "redis";
 
   /**
    * Copy the content of an input stream to an output one.
@@ -560,130 +567,148 @@ public class UploadServlet extends HttpServlet implements Servlet {
     return value;
   }
 
-  /**
-   * Read configurable parameters during the servlet initialization.
-   */
-  public void init(ServletConfig config) throws ServletException {
-    super.init(config);
+    /**
+     * Read configurable parameters during the servlet initialization.
+     */
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
 
-    String size = getInitParameter("maxSize");
-    if (size != null) {
-      try {
-        maxSize = Long.parseLong(size);
-      } catch (NumberFormatException e) {
-      }
+        String size = getInitParameter("maxSize");
+        if (size != null) {
+            try {
+                maxSize = Long.parseLong(size);
+            } catch (NumberFormatException e) {
+            }
+        }
+
+        String fileSize = getInitParameter("maxFileSize");
+        if (null != fileSize) {
+            try {
+                maxFileSize = Long.parseLong(fileSize);
+            } catch (NumberFormatException e) {
+            }
+        }
+
+        String slow = getInitParameter("slowUploads");
+        if (slow != null) {
+            if ("true".equalsIgnoreCase(slow)) {
+                uploadDelay = DEFAULT_SLOW_DELAY_MILLIS;
+            } else {
+                try {
+                    uploadDelay = Integer.valueOf(slow);
+                } catch (NumberFormatException e) {
+                }
+            }
+        }
+
+        String timeout = getInitParameter("noDataTimeout");
+        if (timeout != null) {
+            try {
+                UploadListener.setNoDataTimeout(Integer.parseInt(timeout));
+            } catch (NumberFormatException e) {
+            }
+        }
+
+        String appe = getInitParameter("appEngine");
+        if (appe != null) {
+            appEngine = "true".equalsIgnoreCase(appe);
+        } else {
+            appEngine = isAppEngine();
+        }
+
+        String cors = getInitParameter("corsDomainsRegex");
+        if (cors != null) {
+            corsDomainsRegex = cors;
+        }
+
+        logger.info("UPLOAD-SERVLET init: maxSize=" + maxSize + ", slowUploads=" + slow + ", isAppEngine="
+                + isAppEngine() + ", corsRegex=" + corsDomainsRegex);
     }
 
-    String fileSize = getInitParameter("maxFileSize");
-    if (null != fileSize){
-      try {
-        maxFileSize = Long.parseLong(fileSize);
-      } catch (NumberFormatException e){
-      }
+    /**
+     * Create a new listener for this session.
+     * @param request
+     * @return the appropriate listener
+     */
+    protected AbstractUploadListener createNewListener(HttpServletRequest request) {
+        int delay = request.getParameter("nodelay") != null ? 0 : uploadDelay;
+        if (isAppEngine()) {
+            logger.debug("GWT_UPLOAD_LISTENER_TYPE : MemoryUploadListener");
+            return new MemoryUploadListener(delay, getContentLength(request));
+        } else if (isRedisUploadType(request)) {
+            logger.debug("GWT_UPLOAD_LISTENER_TYPE : RedisUploadListener");
+            return new RedisUploadListener(delay, getContentLength(request));
+        } else {
+            logger.debug("GWT_UPLOAD_LISTENER_TYPE : UploadListener");
+            return new UploadListener(delay, getContentLength(request));
+        }
     }
 
-    String slow = getInitParameter("slowUploads");
-    if (slow != null) {
-      if ("true".equalsIgnoreCase(slow)) {
-        uploadDelay = DEFAULT_SLOW_DELAY_MILLIS;
-      } else {
+    private boolean isRedisUploadType(HttpServletRequest request) {
+        String type = ParameterManager.getDefault().getSystemParam(GWT_UPLOAD_LISTENER_TYPE);
+        logger.debug(GWT_UPLOAD_LISTENER_TYPE + " : " + type);
+        if (GWT_UPLOAD_LISTENER_TYPE_REDIS.equals(type)) {
+            return true;
+        }
+        return false;
+    }
+
+    private long getContentLength(HttpServletRequest request) {
+        long size = -1;
         try {
-          uploadDelay = Integer.valueOf(slow);
+            size = Long.parseLong(request.getHeader(FileUploadBase.CONTENT_LENGTH));
         } catch (NumberFormatException e) {
         }
-      }
+        return size;
     }
 
-    String timeout = getInitParameter("noDataTimeout");
-    if (timeout != null){
-      try {
-        UploadListener.setNoDataTimeout(Integer.parseInt(timeout));
-      } catch (NumberFormatException e) {
-      }
-    }
 
-    String appe = getInitParameter("appEngine");
-    if (appe != null) {
-      appEngine = "true".equalsIgnoreCase(appe);
-    } else {
-      appEngine = isAppEngine();
-    }
-
-    String cors = getInitParameter("corsDomainsRegex");
-    if (cors != null) {
-      corsDomainsRegex = cors;
-    }
-
-    logger.info("UPLOAD-SERVLET init: maxSize=" + maxSize + ", slowUploads=" + slow + ", isAppEngine=" + isAppEngine() + ", corsRegex=" + corsDomainsRegex);
-  }
-
-  /**
-   * Create a new listener for this session.
-   *
-   * @param request
-   * @return the appropriate listener
-   */
-  protected AbstractUploadListener createNewListener(HttpServletRequest request) {
-    int delay = request.getParameter("nodelay") != null ? 0 : uploadDelay;
-    if (isAppEngine()) {
-      return new MemoryUploadListener(delay, getContentLength(request));
-    } else {
-      return new UploadListener(delay, getContentLength(request));
-    }
-  }
-
-  private long getContentLength(HttpServletRequest request) {
-    long size = -1;
-    try {
-      size = Long.parseLong(request.getHeader(FileUploadBase.CONTENT_LENGTH));
-    } catch (NumberFormatException e) {
-    }
-    return size;
-  }
-
-
-  /**
-   * The get method is used to monitor the uploading process or to get the
-   * content of the uploaded files.
-   */
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-    perThreadRequest.set(request);
-    try {
-      AbstractUploadListener listener = getCurrentListener(request);
-      if (request.getParameter(UConsts.PARAM_SESSION) != null) {
-        logger.debug("UPLOAD-SERVLET (" + request.getSession().getId() + ") new session, blobstore=" + (isAppEngine() && useBlobstore));
-        String sessionId = request.getSession().getId();
-        renderXmlResponse(request, response,
-            "<" + TAG_BLOBSTORE + ">" + (isAppEngine() && useBlobstore) + "</" + TAG_BLOBSTORE + ">" +
-            "<" + TAG_SESSION_ID + ">" + sessionId + "</" + TAG_SESSION_ID + ">");
-      } else if (isAppEngine() && (request.getParameter(UConsts.PARAM_BLOBSTORE) != null || request.getParameterMap().size() == 0)) {
-        String blobStorePath = getBlobstorePath(request);
-        logger.debug("UPLOAD-SERVLET (" + request.getSession().getId() + ") getBlobstorePath=" + blobStorePath);
-        renderXmlResponse(request, response, "<" + TAG_BLOBSTORE_PATH + ">" + blobStorePath + "</" + TAG_BLOBSTORE_PATH + ">");
-      } else if (request.getParameter(UConsts.PARAM_SHOW) != null) {
-        getUploadedFile(request, response);
-      } else if (request.getParameter(UConsts.PARAM_CANCEL) != null) {
-        cancelUpload(request);
-        renderXmlResponse(request, response, XML_CANCELED_TRUE);
-      } else if (request.getParameter(UConsts.PARAM_REMOVE) != null) {
-        removeUploadedFile(request, response);
-      } else if (request.getParameter(UConsts.PARAM_CLEAN) != null) {
-        logger.debug("UPLOAD-SERVLET (" + request.getSession().getId() + ") cleanListener");
-        if (listener != null) {
-          listener.remove();
+    /**
+     * The get method is used to monitor the uploading process or to get the
+     * content of the uploaded files.
+     */
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+        perThreadRequest.set(request);
+        try {
+            AbstractUploadListener listener = getCurrentListener(request);
+            if (request.getParameter(UConsts.PARAM_SESSION) != null) {
+                logger.debug("UPLOAD-SERVLET (" + request.getSession().getId() + ") new session, blobstore="
+                        + (isAppEngine() && useBlobstore));
+                String sessionId = request.getSession().getId();
+                renderXmlResponse(request, response, "<" + TAG_BLOBSTORE + ">" + (isAppEngine() && useBlobstore) + "</"
+                        + TAG_BLOBSTORE + ">" + "<" + TAG_SESSION_ID + ">" + sessionId + "</" + TAG_SESSION_ID + ">");
+            } else if (isAppEngine() && (request.getParameter(UConsts.PARAM_BLOBSTORE) != null
+                    || request.getParameterMap().size() == 0)) {
+                String blobStorePath = getBlobstorePath(request);
+                logger.debug("UPLOAD-SERVLET (" + request.getSession().getId() + ") getBlobstorePath=" + blobStorePath);
+                renderXmlResponse(request, response,
+                        "<" + TAG_BLOBSTORE_PATH + ">" + blobStorePath + "</" + TAG_BLOBSTORE_PATH + ">");
+            } else if (request.getParameter(UConsts.PARAM_SHOW) != null) {
+                getUploadedFile(request, response);
+            } else if (request.getParameter(UConsts.PARAM_CANCEL) != null) {
+                cancelUpload(request);
+                renderXmlResponse(request, response, XML_CANCELED_TRUE);
+            } else if (request.getParameter(UConsts.PARAM_REMOVE) != null) {
+                removeUploadedFile(request, response);
+            } else if (request.getParameter(UConsts.PARAM_CLEAN) != null) {
+                logger.debug("UPLOAD-SERVLET (" + request.getSession().getId() + ") cleanListener");
+                if (listener != null) {
+                    listener.remove();
+                }
+                renderXmlResponse(request, response, XML_FINISHED_OK);
+            } else if (listener != null && listener.isFinished()) {
+                removeCurrentListener(request);
+                renderXmlResponse(request, response, listener.getPostResponse());
+            } else {
+                String message = statusToString(
+                        getUploadStatus(request, request.getParameter(UConsts.PARAM_FILENAME), null));
+                renderXmlResponse(request, response, message);
+            }
+        } finally {
+            perThreadRequest.set(null);
         }
-        renderXmlResponse(request, response, XML_FINISHED_OK);
-      } else if (listener != null && listener.isFinished()) {
-        removeCurrentListener(request);
-        renderXmlResponse(request, response, listener.getPostResponse());
-      } else {
-        String message = statusToString(getUploadStatus(request, request.getParameter(UConsts.PARAM_FILENAME), null));
-        renderXmlResponse(request, response, message);
-      }
-    } finally {
-      perThreadRequest.set(null);
     }
-  }
 
   protected String statusToString(Map<String, String> stat) {
     String message = "";
@@ -809,6 +834,8 @@ public class UploadServlet extends HttpServlet implements Servlet {
   protected AbstractUploadListener getCurrentListener(HttpServletRequest request) {
     if (isAppEngine()) {
       return MemoryUploadListener.current(request.getSession().getId());
+    } else if (isRedisUploadType(request)) {
+        return RedisUploadListener.current(request.getParameter(RedisUploadListener.UPLOAD_ID));
     } else {
       return UploadListener.current(request);
     }
@@ -847,7 +874,7 @@ public class UploadServlet extends HttpServlet implements Servlet {
       if (listener.isFinished()) {
 
       } else if (listener.getException() != null) {
-        if (listener.getException() instanceof UploadCanceledException) {
+        if (listener.getException() instanceof UploadCanceledException) {       
           ret.put(TAG_CANCELED, "true");
           ret.put(TAG_FINISHED, TAG_CANCELED);
           logger.error("UPLOAD-SERVLET (" + session.getId() + ") getUploadStatus: " + fieldname + " canceled by the user after " + listener.getBytesRead() + " Bytes");
