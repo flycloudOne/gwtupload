@@ -157,4 +157,10 @@ public interface IUploadStatus extends HasProgress, IsWidget {
   void setVisible(boolean b);
 
   Set<CancelBehavior> getCancelConfiguration();
+  
+  /**
+   * 获取进度条上的取消按钮组件
+   * @return
+   */
+  Widget getCancelWidget();
 }

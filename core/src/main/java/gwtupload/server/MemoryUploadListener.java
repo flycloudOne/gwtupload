@@ -21,6 +21,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This File Upload Listener is used by Apache Commons File Upload to
  * monitor the progress of the uploaded file.
@@ -35,6 +38,8 @@ import java.util.Map;
  *
  */
 public class MemoryUploadListener extends AbstractUploadListener {
+    
+  private static final Logger logger = LoggerFactory.getLogger(MemoryUploadListener.class);
 
   private static final long serialVersionUID = 7395899170157906525L;
 

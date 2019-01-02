@@ -42,7 +42,7 @@ public abstract class AbstractUploadListener implements ProgressListener, Serial
 
   protected static int DEFAULT_SAVE_INTERVAL = 3000;
 
-  protected static final Logger logger = LoggerFactory.getLogger(AbstractUploadListener.class);
+  private static final Logger logger = LoggerFactory.getLogger(AbstractUploadListener.class);
 
   protected static final long serialVersionUID = -6431275569719042836L;
 

@@ -16,13 +16,16 @@
  */
 package gwtupload.server;
 
-import gwtupload.server.exceptions.UploadTimeoutException;
-
 import java.io.Serializable;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import gwtupload.server.exceptions.UploadTimeoutException;
 
 
 /**
@@ -36,6 +39,9 @@ import javax.servlet.http.HttpSession;
  *
  */
 public class UploadListener extends AbstractUploadListener {
+    
+    
+  private static final Logger logger = LoggerFactory.getLogger(UploadListener.class);
 
   /**
    * A class which is executed in a new thread, so its able to detect
@@ -44,6 +50,7 @@ public class UploadListener extends AbstractUploadListener {
    * This doesn't work in Google application engine
    */
   public class TimeoutWatchDog extends Thread implements Serializable {
+      
     private static final long serialVersionUID = -649803529271569237L;
 
     AbstractUploadListener listener;

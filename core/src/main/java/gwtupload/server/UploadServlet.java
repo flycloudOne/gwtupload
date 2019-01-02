@@ -784,7 +784,8 @@ public class UploadServlet extends HttpServlet implements Servlet {
 
   private String formFieldToXml(FileItem i) {
     Map<String, String> item = new HashMap<String, String>();
-    item.put(TAG_VALUE, "" + i.getString());
+    // 添加CDATA，解决文件名中出现xml不支持的字符问题
+    item.put(TAG_VALUE,  "<![CDATA[" + i.getString() + "]]>");
     item.put(TAG_FIELD, "" + i.getFieldName());
 
     Map<String, String> param = new HashMap<String, String>();
@@ -796,7 +797,8 @@ public class UploadServlet extends HttpServlet implements Servlet {
     Map<String, String> item = new HashMap<String, String>();
     item.put(TAG_CTYPE, i.getContentType() !=null ? i.getContentType() : "unknown");
     item.put(TAG_SIZE, "" + i.getSize());
-    item.put(TAG_NAME, "" + i.getName());
+    // 添加CDATA，解决文件名中出现xml不支持的字符问题
+    item.put(TAG_NAME, "<![CDATA[" + i.getName() + "]]>");
     item.put(TAG_FIELD, "" + i.getFieldName());
     if (i instanceof HasKey) {
       String k = ((HasKey)i).getKeyString();

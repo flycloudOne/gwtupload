@@ -4,10 +4,15 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.efounder.buffer.SerializeUtil;
 import com.efounder.buffer.redis.RedisCachedManager;
 
 public class RedisUploadListener extends AbstractUploadListener {
+    
+    private static final Logger logger = LoggerFactory.getLogger(RedisUploadListener.class);
     
     private static final long serialVersionUID = 1L;
     

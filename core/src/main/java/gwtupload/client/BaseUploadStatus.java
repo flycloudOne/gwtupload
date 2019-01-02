@@ -137,6 +137,16 @@ public class BaseUploadStatus implements IUploadStatus {
   protected HTML getCancelLabel() {
     return new HTML(" ");
   }
+  
+  /**
+   * 在上传组件可以获取取消组件
+   * @return
+   */
+  @Override
+  public Widget getCancelWidget() {
+      return cancelLabel;
+  }
+  
 
   /* (non-Javadoc)
    * @see gwtupload.client.IUploadStatus#addCancelHandler(gwtupload.client.UploadCancelHandler)
