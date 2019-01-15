@@ -19,6 +19,7 @@ package gwtupload.client;
 import java.util.List;
 import java.util.Set;
 
+import com.efounder.gwt.controls.utils.FormAlert;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -199,7 +200,8 @@ public class BaseUploadStatus implements IUploadStatus {
    */
   public void setError(String msg) {
     setStatus(Status.ERROR);
-    Window.alert(msg.replaceAll("\\\\n", "\\n"));
+//    Window.alert(msg.replaceAll("\\\\n", "\\n"));
+    FormAlert.showErrorAlert(msg.replaceAll("\\\\n", "\\n"));
   }
 
   /*

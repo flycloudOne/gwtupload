@@ -270,6 +270,56 @@ public interface IUploader extends HasJsData, HasWidgets, IsWidget {
   }
 
   /**
+   * Interface for localizable elements.
+   */
+  public interface UploaderConstants_zh_CN extends UploaderConstants {
+    @DefaultStringValue("正在上传，请稍后再试。")
+    String uploaderActiveUpload();
+
+    @DefaultStringValue("此文件已上传。")
+    String uploaderAlreadyDone();
+
+    @DefaultStringValue("应用程序配置为使用GAE blobstore。\n 服务器在创建Upload-Url时出现错误 \n 确保您已为此应用程序启用计费以使用blobstore。")
+    String uploaderBlobstoreError();
+
+    @DefaultStringValue("选择要上传的文件...")
+    String uploaderBrowse();
+
+    @DefaultStringValue("删除文件。")
+    String uploaderDrop();
+
+    @DefaultStringValue("文件无效。\n 只允许上传这些类型的文件：\n")
+    String uploaderInvalidExtension();
+
+    @DefaultStringValue("发送")
+    String uploaderSend();
+
+    @DefaultStringValue("服务器响应无效。 您是否在服务器端正确配置了应用程序？")
+    String uploaderServerError();
+
+    @DefaultStringValue("无法自动提交表单，似乎您的浏览器在此功能方面存在安全问题。 \n 开发人员信息：如果您使用的是jsupload且不需要跨域，请尝试使用标准链接器编译的版本？")
+    String submitError();
+
+    @DefaultStringValue("无法与服务器联系：")
+    String uploaderServerUnavailable();
+
+    @DefaultStringValue("发送文件超时：\n 您的浏览器可能无法正确发送文件，\n 您的会话可能已过期，\n 您的网络可能出现异常， \n 或者服务器出现错误。\n 请稍候再试一次。")
+    String uploaderTimeout();
+
+    @DefaultStringValue("上传文件时出错，服务器响应的格式无法被应用程序解析。")
+    String uploaderBadServerResponse();
+
+    @DefaultStringValue("附加信息：您似乎正在使用blobstore，因此为了上传大文件，请检查您的应用程序是否已启用计费。")
+    String uploaderBlobstoreBilling();
+
+    @DefaultStringValue("键入无效文件名时出错，请选择有效的文件名。")
+    String uploaderInvalidPathError();
+
+    @DefaultStringValue("检查服务器端的日志，可能会引发异常，或者它可能发出了CORS请求。")
+    String uploaderBadParsing();
+  }  
+  
+  /**
    * Get the url where the server application is installed.
    */
   String getServletPath();

@@ -16,49 +16,6 @@
  */
 package gwtupload.client;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
-import com.google.gwt.dom.client.FormElement;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.RequestException;
-import com.google.gwt.http.client.RequestTimeoutException;
-import com.google.gwt.http.client.Response;
-import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.FormPanel;
-import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
-import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
-import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
-import com.google.gwt.user.client.ui.FormPanel.SubmitHandler;
-import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Hidden;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.xml.client.Document;
-import com.google.gwt.xml.client.Node;
-import com.google.gwt.xml.client.NodeList;
-import com.google.gwt.xml.client.XMLParser;
-
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Logger;
-
-import gwtupload.client.dnd.DragAndDropFormPanel;
-import gwtupload.client.dnd.IDragAndDropFileInput;
 import static gwtupload.shared.UConsts.ATTR_BLOBSTORE_PARAM_NAME;
 import static gwtupload.shared.UConsts.MULTI_SUFFIX;
 import static gwtupload.shared.UConsts.PARAM_BLOBKEY;
@@ -93,6 +50,52 @@ import gwtupload.client.IFileInput.FileInputType;
 import gwtupload.client.ISession.Session;
 import gwtupload.client.IUploadStatus.Status;
 import gwtupload.client.bundle.UploadCss;
+import gwtupload.client.dnd.DragAndDropFormPanel;
+import gwtupload.client.dnd.IDragAndDropFileInput;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Logger;
+
+import com.efounder.gwt.controls.utils.FormAlert;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
+import com.google.gwt.dom.client.FormElement;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.http.client.RequestTimeoutException;
+import com.google.gwt.http.client.Response;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONParser;
+import com.google.gwt.json.client.JSONValue;
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.FormPanel;
+import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteEvent;
+import com.google.gwt.user.client.ui.FormPanel.SubmitCompleteHandler;
+import com.google.gwt.user.client.ui.FormPanel.SubmitEvent;
+import com.google.gwt.user.client.ui.FormPanel.SubmitHandler;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Hidden;
+import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.xml.client.Document;
+import com.google.gwt.xml.client.Node;
+import com.google.gwt.xml.client.NodeList;
+import com.google.gwt.xml.client.XMLParser;
 
 /**
  * <p>
@@ -240,6 +243,10 @@ public class Uploader extends Composite implements IsUpdateable, IUploader, HasJ
         firstTime = false;
       }
     }
+    public void cancel() {
+        super.cancel();
+        firstTime = true;
+    }
   };
 
   protected boolean autoSubmit = false;
@@ -326,6 +333,7 @@ public class Uploader extends Composite implements IsUpdateable, IUploader, HasJ
     }
     public void onResponseReceived(Request request, Response response) {
       if (getStatus() == Status.CANCELING) {
+        parseAjaxResponse(response.getText());
         updateStatusTimer.scheduleRepeating(3000);
       }
     }
@@ -420,6 +428,10 @@ public class Uploader extends Composite implements IsUpdateable, IUploader, HasJ
       if (finished == true && !uploading) {
         updateStatusTimer.cancel();
         return;
+      }
+      if (canceled && getUseNginx()) {
+          updateStatusTimer.cancel();
+          return;
       }
       parseAjaxResponse(response.getText());
     }
@@ -533,7 +545,41 @@ public class Uploader extends Composite implements IsUpdateable, IUploader, HasJ
   private ServerMessage serverMessage = new ServerMessage();
 
   private String servletPath = "servlet.gupld";
-  private ISession session = null;
+  
+  private boolean useNginx = false;
+  public boolean getUseNginx() {
+    return useNginx;
+  }
+
+  public void setUseNginx(boolean useNginx) {
+    this.useNginx = useNginx;
+  }
+  /**
+   * Nginx获取进度地址
+   */
+  private String NginxProgressPath= "";
+  
+  public String getNginxProgressPath() {
+    return NginxProgressPath;
+  }
+
+  public void setNginxProgressPath(String nginxProgressPath) {
+    NginxProgressPath = nginxProgressPath;
+  }
+  
+  /**
+   * Nginx获取进度ID
+   */
+  private String NginxProgressId = "";
+  
+  public String getNginxProgressId() {
+    return NginxProgressId;
+  }
+
+  public void setNginxProgressId(String nginxProgressId) {
+      NginxProgressId = nginxProgressId;
+  }
+private ISession session = null;
 
   private IUploadStatus.UploadStatusChangedHandler statusChangedHandler = new IUploadStatus.UploadStatusChangedHandler() {
     public void onStatusChanged(IUploadStatus statusWiget) {
@@ -1063,7 +1109,15 @@ public class Uploader extends Composite implements IsUpdateable, IUploader, HasJ
       return;
     }
     waitingForResponse = true;
-    session.sendRequest("get_status", onStatusReceivedCallback, "filename=" + fileInput.getName().replace(MULTI_SUFFIX, "") , "c=" + requestsCounter++);
+    
+    if (getUseNginx()) {
+        String url = getNginxProgressPath();
+        url += "&random=" + Math.random();
+        session.sendNginxRequest(onStatusReceivedCallback, getNginxProgressId(), url);
+    } else {
+        session.sendRequest("get_status", onStatusReceivedCallback, "filename=" + fileInput.getName().replace(MULTI_SUFFIX, "") , "c=" + requestsCounter++);
+    }
+//    session.sendRequest("get_status", onStatusReceivedCallback, "filename=" + fileInput.getName().replace(MULTI_SUFFIX, "") , "c=" + requestsCounter++);
   }
 
   /**
@@ -1168,7 +1222,14 @@ public class Uploader extends Composite implements IsUpdateable, IUploader, HasJ
     if (responseTxt == null) {
       return;
     }
-
+    try {
+        JSONObject jsonObj = (JSONObject) JSONParser.parse(responseTxt);
+        NginxUploadProgress(jsonObj);
+        return;
+    } catch (Exception e) {
+        log("非Nginx进度信息。", null);
+    }
+    
     String error = null;
     Document doc = null;
     try {
@@ -1255,6 +1316,10 @@ public class Uploader extends Composite implements IsUpdateable, IUploader, HasJ
       return;
     } else {
       log("incorrect response: " + getFileNames() + " " + responseTxt, null);
+      if (getUseNginx()) {
+          updateStatusTimer.cancel();
+          cancel();
+      }
     }
 
     if (uploadTimeout > 0 && now() - lastData >  uploadTimeout) {
@@ -1267,6 +1332,42 @@ public class Uploader extends Composite implements IsUpdateable, IUploader, HasJ
     }
   }
 
+  /**
+   * Nginx上传进度
+   */
+  private void NginxUploadProgress(JSONObject json) {
+      if (json == null) {
+          return;
+      }
+      log("Nginx进度数据：" + json.toString(), null);
+      JSONValue state = json.get("state");
+      if (state == null) {
+          return;
+      }
+      if ("uploading".equals(state.toString().replace("\"", ""))) {
+          lastData = now();
+          JSONValue received = json.get("received");
+          JSONValue size = json.get("size");
+          try {
+              long done = Long.valueOf(received.toString().replace("\"", "")) / 1024;
+              long total = Long.valueOf(size.toString().replace("\"", "")) / 1024;
+              statusWidget.setProgress(done, total);
+              log("Nginx server response transferred  " + done + "/" + total + " " + getFileNames(), null);
+          } catch (Exception e) {
+              return;
+          }
+      } else if ("done".equals(state.toString().replace("\"", ""))) {
+          successful = true;
+          uploadFinished();
+      } else if ("error".equals(state.toString().replace("\"", ""))) {
+          String msg = "state:error,status:" + json.get("status").toString().replace("\"", "") + ", 上传文件出现错误，请稍后重试。";
+          updateStatusTimer.cancel();
+          successful = false;
+          canceled = true;
+          cancelUpload(msg);
+      }
+  }
+  
   /**
    * remove a file from the upload queue.
    */
@@ -1419,5 +1520,26 @@ public class Uploader extends Composite implements IsUpdateable, IUploader, HasJ
 
   public ServerMessage getServerMessage() {
     return serverMessage;
+  }
+  
+  @Override
+  protected void onDetach(){
+      super.onDetach();
+      
+      Status status = this.getStatus();
+      if (Status.INPROGRESS.equals(status)) {
+          if (automaticUploadTimer != null) {
+              automaticUploadTimer.cancel();
+          }
+          if (updateStatusTimer != null) {
+              updateStatusTimer.cancel();
+          }
+          
+          fileDone = new HashSet<String>();
+          fileUploading = new HashSet<String>();
+          fileQueue = new ArrayList<String>();
+          
+          reuse();
+      }
   }
 }

@@ -2,7 +2,7 @@
 
   <modelVersion>4.0.0</modelVersion>
   <artifactId>gwtupload</artifactId>
-  <version>1.0.12</version>
+  <version>1.0.21</version>
   <packaging>jar</packaging>
   <name>GwtUpload library</name>
   <description>GwtUpload library: client and server classes (compatible with: Gwt 1.6.x,1.7.x,2.0.x)</description>
@@ -48,19 +48,12 @@
 		<version>1.1.113</version>
 		<scope>provided</scope>
 	</dependency>
+	<dependency>
+        <groupId>osp.cloud.gwt</groupId>
+        <artifactId>GWTFormComps</artifactId>
+        <version>1.0.54</version>
+        </dependency>
   </dependencies>
-
-<!--
-  <profiles>
-     <profile>
-       <id>1.6.4</id>
-       <properties>
-         <gwtVersion>1.6.4</gwtVersion>
-         <gwtMaven>1.3-SNAPSHOT</gwtMaven>
-       </properties>
-     </profile>
-  </profiles>
--->
 
   <build>
     <resources>

@@ -40,7 +40,7 @@ public abstract class AbstractUploadListener implements ProgressListener, Serial
 
   protected static String className = AbstractUploadListener.class.getName().replaceAll("^.+\\.", "");
 
-  protected static int DEFAULT_SAVE_INTERVAL = 3000;
+  protected static int DEFAULT_SAVE_INTERVAL = 100;
 
   private static final Logger logger = LoggerFactory.getLogger(AbstractUploadListener.class);
 

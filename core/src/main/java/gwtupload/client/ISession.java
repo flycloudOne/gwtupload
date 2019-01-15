@@ -103,6 +103,21 @@ public interface ISession {
       }
     }
 
+    /**
+     * 发送请求获取Nginx进度
+     */
+    public void sendNginxRequest(RequestCallback callback, String progressId, String url) {
+        RequestBuilder reqBuilder = new RequestBuilder(RequestBuilder.GET, url);
+        reqBuilder.setTimeoutMillis(DEFAULT_AJAX_TIMEOUT);
+        reqBuilder.setHeader("X-Progress-ID", progressId);
+        try {
+          reqBuilder.setCallback(callback);
+          reqBuilder.send();
+        } catch (RequestException e) {
+          callback.onError(null, e);
+        }
+    }
+    
     protected RequestBuilder createRequest(Method method, int timeout, String...params) {
       RequestBuilder reqBuilder = new RequestBuilder(RequestBuilder.GET, composeURL(params));
       reqBuilder.setTimeoutMillis(timeout);
@@ -132,6 +147,8 @@ public interface ISession {
   public String composeURL(String... params);
 
   public void sendRequest(String name, RequestCallback callback, String... params);
+  
+  public void sendNginxRequest(RequestCallback callback, String id, String url);
 
   public String getServletPath();
 }

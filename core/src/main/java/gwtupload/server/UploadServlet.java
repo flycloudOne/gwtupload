@@ -312,9 +312,31 @@ public class UploadServlet extends HttpServlet implements Servlet {
       ResourceBundle.getBundle(UploadServlet.class.getName(), loc);
 
     String msg = res.getString(key);
+    if ("zh".equals(loc.getLanguage()) && "CN".equals(loc.getCountry())) {
+        msg = convertEncodingFormat(msg, "ISO-8859-1", "UTF-8");
+    }
     return new MessageFormat(msg, loc).format(pars);
   }
 
+  /**
+   * 格式转换
+   * @param str
+   * @param formatFrom
+   * @param FormatTo
+   * @return
+   */
+  private static String convertEncodingFormat(String str, String formatFrom, String FormatTo) {
+      String result = null;
+      if (!(str == null || str.length() == 0)) {
+          try {
+              result = new String(str.getBytes(formatFrom), FormatTo);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+      }
+      return result;
+  }
+  
   public static final HttpServletRequest getThreadLocalRequest() {
     return perThreadRequest.get();
   }
@@ -931,7 +953,6 @@ public class UploadServlet extends HttpServlet implements Servlet {
    *
    */
   protected String parsePostRequest(HttpServletRequest request, HttpServletResponse response) {
-
     try {
       String delay = request.getParameter(PARAM_DELAY);
       String maxFilesize = request.getParameter(PARAM_MAX_FILE_SIZE);
