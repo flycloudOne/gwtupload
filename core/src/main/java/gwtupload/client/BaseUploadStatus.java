@@ -19,12 +19,12 @@ package gwtupload.client;
 import java.util.List;
 import java.util.Set;
 
-import com.efounder.gwt.controls.utils.FormAlert;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Window;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasText;
@@ -33,6 +33,8 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.sencha.gxt.widget.core.client.Dialog.PredefinedButton;
+import com.sencha.gxt.widget.core.client.box.MessageBox;
 
 /**
  *<p>
@@ -201,9 +203,33 @@ public class BaseUploadStatus implements IUploadStatus {
   public void setError(String msg) {
     setStatus(Status.ERROR);
 //    Window.alert(msg.replaceAll("\\\\n", "\\n"));
-    FormAlert.showErrorAlert(msg.replaceAll("\\\\n", "\\n"));
+    showAlert(msg.replaceAll("\\\\n", "\\n"));
   }
 
+  /**
+   * 弹出窗口
+   */
+  public static void showAlert(final String text)
+  {
+      ImageResource icon = MessageBox.ICONS.error();
+      MessageBox messageBox =new MessageBox("系统提示");
+      messageBox.getButton(PredefinedButton.OK).setText("确定");
+      messageBox.getButton(PredefinedButton.OK).getElement().getStyle().setProperty("minWidth", "60px");
+      messageBox.getButton(PredefinedButton.OK).setHeight(25);
+      messageBox.setIcon(icon);
+      
+      @SuppressWarnings("serial")
+      SafeHtml textHtml = new SafeHtml() {
+          @Override
+          public String asString() {
+              return text;
+          }
+      };
+      messageBox.setMessage(textHtml);
+      
+      messageBox.show();
+  }
+  
   /*
    * (non-Javadoc)
    *

@@ -1,17 +1,35 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
+  <groupId>com.googlecode.gwtupload</groupId>
   <artifactId>gwtupload</artifactId>
-  <version>1.0.21</version>
+  <version>1.0.23</version>
   <packaging>jar</packaging>
-  <name>GwtUpload library</name>
-  <description>GwtUpload library: client and server classes (compatible with: Gwt 1.6.x,1.7.x,2.0.x)</description>
 
   <parent>
-    <groupId>com.googlecode.gwtupload</groupId>
-    <artifactId>gwtupload-project</artifactId>
-    <version>1.0.3</version>
+      <groupId>osp.cloud.server.parent</groupId>
+      <artifactId>osp-reference-parent</artifactId>
+      <version>1.0.13</version>
   </parent>
+  
+  <properties>
+      <main.basedir>${project.parent.basedir}</main.basedir>
+      <maven.compiler.source>1.6</maven.compiler.source>
+      <maven.compiler.target>1.6</maven.compiler.target>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <gwtVersion>2.7.0</gwtVersion>
+      <gwtMaven>2.7.0</gwtMaven>
+      <commonsFileuploadVersion>1.3.1</commonsFileuploadVersion>
+      <commonsIoVersion>2.3</commonsIoVersion>
+      <gwtChismesVersion>0.9.7</gwtChismesVersion>
+      <gwtExporterVersion>2.4.0-M1</gwtExporterVersion>
+      <gwtIncubatorVersion>20101117-r1766</gwtIncubatorVersion>
+      <junitVersion>3.8.2</junitVersion>
+      <log4jVersion>1.2.16</log4jVersion>
+      <commonsLang3Version>3.1</commonsLang3Version>
+      <downloadLabel>Beta</downloadLabel>
+      <gae.version>1.9.17</gae.version>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -50,9 +68,10 @@
 	</dependency>
 	<dependency>
         <groupId>osp.cloud.gwt</groupId>
-        <artifactId>GWTFormComps</artifactId>
-        <version>1.0.54</version>
-        </dependency>
+        <artifactId>gxt</artifactId>
+        <version>4.0.0</version>
+        <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -62,12 +81,5 @@
     <plugins>
     </plugins>
   </build>
-
-  <distributionManagement>
-    <site>
-      <id>googlecode</id>
-      <url>svn:https://gwtupload.googlecode.com/svn/site/${artifactId}</url>
-    </site>
-  </distributionManagement>
 
 </project>

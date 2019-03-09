@@ -46,12 +46,6 @@ import static gwtupload.shared.UConsts.TAG_PERCENT;
 import static gwtupload.shared.UConsts.TAG_SIZE;
 import static gwtupload.shared.UConsts.TAG_TOTAL_BYTES;
 import static gwtupload.shared.UConsts.TAG_WAIT;
-import gwtupload.client.IFileInput.FileInputType;
-import gwtupload.client.ISession.Session;
-import gwtupload.client.IUploadStatus.Status;
-import gwtupload.client.bundle.UploadCss;
-import gwtupload.client.dnd.DragAndDropFormPanel;
-import gwtupload.client.dnd.IDragAndDropFileInput;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,7 +55,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
-import com.efounder.gwt.controls.utils.FormAlert;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
@@ -96,6 +89,13 @@ import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Node;
 import com.google.gwt.xml.client.NodeList;
 import com.google.gwt.xml.client.XMLParser;
+
+import gwtupload.client.IFileInput.FileInputType;
+import gwtupload.client.ISession.Session;
+import gwtupload.client.IUploadStatus.Status;
+import gwtupload.client.bundle.UploadCss;
+import gwtupload.client.dnd.DragAndDropFormPanel;
+import gwtupload.client.dnd.IDragAndDropFileInput;
 
 /**
  * <p>
