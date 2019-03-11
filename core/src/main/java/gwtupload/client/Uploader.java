@@ -554,6 +554,19 @@ public class Uploader extends Composite implements IsUpdateable, IUploader, HasJ
   public void setUseNginx(boolean useNginx) {
     this.useNginx = useNginx;
   }
+  
+  /**
+   * Nginx模式下，是否使用JSONP模式（跨域下使用）
+   */
+  private boolean useJSONP = false;
+  public boolean getUseJSONP() {
+    return useJSONP;
+  }
+
+  public void setUseJSONP(boolean useJSONP) {
+    this.useJSONP = useJSONP;
+  }
+  
   /**
    * Nginx获取进度地址
    */
@@ -1110,7 +1123,11 @@ private ISession session = null;
     }
     waitingForResponse = true;
     
-    if (getUseNginx()) {
+    if (getUseNginx() && getUseJSONP()) {
+        String url = getNginxProgressPath();
+        url += "&random=" + Math.random();
+        session.sendJSONPNginxRequest(onStatusReceivedCallback, url);
+    } else if (getUseNginx()) {
         String url = getNginxProgressPath();
         url += "&random=" + Math.random();
         session.sendNginxRequest(onStatusReceivedCallback, getNginxProgressId(), url);
