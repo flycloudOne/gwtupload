@@ -1,14 +1,18 @@
 package gwtupload.client;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestBuilder.Method;
+import com.google.gwt.http.client.Header;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
+import com.google.gwt.jsonp.client.JsonpRequestBuilder;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.xml.client.XMLParser;
 
 import java.util.List;
@@ -118,6 +122,99 @@ public interface ISession {
         }
     }
     
+    static class Feed extends JavaScriptObject {
+        protected Feed() {}
+
+        public final native Object getReceived() /*-{
+            return this.received;
+        }-*/;
+        
+        public final native Object getSize() /*-{
+            return this.size;
+        }-*/;
+        
+        public final native Object getState() /*-{
+            return this.state;
+        }-*/;
+        
+        public final native Object getEntries() /*-{
+              return this.feed;
+        }-*/;
+    }
+    
+    class JSONPResponse extends Response {
+        @Override
+        public String getHeader(String header) {
+            return null;
+        }
+
+        @Override
+        public Header[] getHeaders() {
+            return null;
+        }
+
+        @Override
+        public String getHeadersAsString() {
+            return null;
+        }
+
+        @Override
+        public int getStatusCode() {
+            return 0;
+        }
+
+        @Override
+        public String getStatusText() {
+            return null;
+        }
+
+        private String text = "";
+        @Override
+        public String getText() {
+            return text;
+        }
+        
+        public void setext(String text) {
+            this.text = text;
+        }
+    }
+    
+    /**
+     * 跨域下的Nginx上传
+     * @param url
+     */
+    public void sendJSONPNginxRequest(final RequestCallback callback, String url) {
+        JsonpRequestBuilder jsonp = new JsonpRequestBuilder();
+        jsonp.requestObject(url, new AsyncCallback<Feed>() {
+
+            @Override
+            public void onFailure(Throwable caught) {
+                callback.onError(null, caught);
+            }
+
+            @Override
+            public void onSuccess(Feed feed) {
+                if (feed != null) {
+                    JSONPUploadSuccess(callback, feed);
+                } else {
+                    GWT.log("Nginx模式下，JSONP模式未获取到返回值。");
+                }
+            }
+        });
+    }
+    
+    private void JSONPUploadSuccess(RequestCallback callback, Feed feed) {
+        Object state = feed.getState();
+        Object received = feed.getReceived();
+        Object size = feed.getSize();
+        
+        String result = "{state:'"+state.toString().replace("\"", "")+"',received:'"+received+"',size:'"+size+"'}";
+        
+        JSONPResponse response = new JSONPResponse();
+        response.setext(result);
+        callback.onResponseReceived(null, response);
+    }
+    
     protected RequestBuilder createRequest(Method method, int timeout, String...params) {
       RequestBuilder reqBuilder = new RequestBuilder(RequestBuilder.GET, composeURL(params));
       reqBuilder.setTimeoutMillis(timeout);
@@ -149,6 +246,8 @@ public interface ISession {
   public void sendRequest(String name, RequestCallback callback, String... params);
   
   public void sendNginxRequest(RequestCallback callback, String id, String url);
+  
+  public void sendJSONPNginxRequest(RequestCallback callback, String url);
 
   public String getServletPath();
 }
