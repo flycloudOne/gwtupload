@@ -993,10 +993,10 @@ public class UploadServlet extends HttpServlet implements Servlet {
       uploader.setProgressListener(listener);
 
       // Receive the files
-      logger.error("UPLOAD-SERVLET (" + session.getId() + ") parsing HTTP POST request ");
+      logger.debug("UPLOAD-SERVLET (" + session.getId() + ") parsing HTTP POST request ");
       uploadedItems = uploader.parseRequest(request);
       session.removeAttribute(getSessionLastFilesKey(request));
-      logger.error("UPLOAD-SERVLET (" + session.getId() + ") parsed request, " + uploadedItems.size() + " items received.");
+      logger.debug("UPLOAD-SERVLET (" + session.getId() + ") parsed request, " + uploadedItems.size() + " items received.");
 
       // Received files are put in session
       List<FileItem> sessionFiles = getMySessionFileItems(request);
@@ -1040,7 +1040,7 @@ public class UploadServlet extends HttpServlet implements Servlet {
       listener.setException(e);
       throw e;
     } catch (Throwable e) {
-      logger.error("UPLOAD-SERVLET (" + request.getSession().getId() + ") Unexpected Exception -> " + e.getMessage() + "\n" + stackTraceToString(e));
+      logger.error("UPLOAD-SERVLET (" + request.getSession().getId() + ") Unexpected Exception -> " + e.getMessage(), e);
       e.printStackTrace();
       RuntimeException ex = new UploadException(e);
       listener.setException(ex);
